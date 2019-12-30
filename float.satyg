@@ -1,6 +1,8 @@
 @import: zrbase/zp0
 @import: eq
 @import: ord
+@import: int
+@import: bool
 
 module Float : sig
   val inf : float
@@ -10,6 +12,11 @@ module Float : sig
   val is-zero : float -> bool
   val is-inf : float -> bool
   val is-nan : float -> bool
+  val is-subnormal : float -> bool
+  val is-normal : float -> bool
+  val signbit : float -> bool
+  val ldexp : int -> float -> float
+  val frexp : float -> float * int
 
   val (<) : float -> float -> bool
   val (>) : float -> float -> bool
@@ -61,6 +68,23 @@ end = struct
 
   let to-length f = 1pt *' f % never introduces inexactness
 
+  let pow2i i =
+    if not (-1022 <= i && i <= 1023) then
+      panic `Float.pow2i: invalid argument`
+    else
+      % binary method
+      let-rec aux i e acc =
+        if i == 0 then
+          acc
+        else
+          aux (i / 2) (e *. e) (if i mod 2 == 1 then acc *. e else acc) in
+      if i == 0 then
+        1.0
+      else if i > 0 then
+        aux i 2.0 1.0
+      else
+        aux (-i) 0.5 1.0
+
   let (<) f g = to-length f <' to-length g
   let (>) f g = g < f
 
@@ -77,9 +101,12 @@ end = struct
       (is-inf f && is-inf g && f *. g > 0.0)
     else
       is-zero (f -. g)
-
   let (<=) f g = f < g || f == g
   let (>=) f g = g <= f
+  let is-finite f = not (is-nan f || is-inf f)
+  let min-normal = pow2i(-1022)
+  let is-subnormal f = is-finite f && not (is-zero f) && f < min-normal
+  let is-normal f = is-finite f && not (is-zero f) && f >= min-normal
 
   let ord = Ord.make (fun a b -> (if a < b then Lt else if a > b then Gt else Eq))
   let eq = Ord.derive-eq ord
@@ -95,7 +122,77 @@ end = struct
   let of-int = float
   let to-int = round
 
-  let pow y x = ZP0.pow x y % x^y == (x |> pow y)
+  let ldexp exp f =
+    open Int in
+    if is-nan f || is-inf f || is-zero f || exp == 0 then
+      f
+    else if exp >= 0 then
+      if exp <= 1023 then
+        f *. pow2i exp
+      else
+        (f *. pow2i 1023) *. pow2i (exp - 1023)
+    else
+      if exp >= -1022 then
+        f *. pow2i exp
+      else
+        (f *. pow2i (-1022)) *. pow2i (exp + 1022)
+
+  let signbit f =
+    if is-nan f then
+      false
+    else if is-zero f then
+      (1.0 /. f) < 0.0
+    else
+      (f < 0.0)
+
+  let get-exp f =
+    if not (is-finite f) then
+      1023
+    else if is-zero f || is-subnormal f then
+      0
+    else
+      let-rec aux f k acc =
+        if Int.(k == 0) then
+          acc
+        else
+          if f >= pow2i ((2 |> Int.pow (k - 1)) - 1023) then
+            aux (f |> ldexp (- (2 |> Int.pow (k - 1)))) (k - 1) (acc * 2 + 1)
+          else
+            aux f (k - 1) (acc * 2)
+      in aux (abs f) 11 0
+
+  let-rec frexp f =
+    if is-nan f || is-inf f then
+      (f, 1023)
+    else if is-zero f then
+      (f, 0)
+    else if f < 0.0 then
+      let (f, exp) = frexp (neg f) in
+      (neg f, exp)
+    else
+      let-rec aux f e = % adjust subnormal numbers
+        if f >= 0.5 then
+          (f, e)
+        else
+          aux (f |> ldexp 1) (e - 1)
+      in
+      let exp = get-exp f in
+      aux (f |> ldexp (1023 - exp - 1)) (exp - 1023 + 1)
+
+  let fields f =
+    if is-nan f then
+      (0, 1023, 1)
+    else if f == inf then
+      (0, 1023, 0)
+    else if f == ninf then
+      (1, 1023, 0)
+    else if f == 0.0 then
+      (signbit f |> Bool.to-int, 0, 0)
+    else if is-subnormal f then
+      (signbit f |> Bool.to-int, 0, round (f |> abs |> ldexp 1074)) % 1022 + 52
+    else
+      let exp = get-exp f in
+      (signbit f |> Bool.to-int, exp, round (f |> abs |> ldexp (1023 - exp + 52)))
 
   let ceil = ZP0.ceil
   let floor = ZP0.floor
@@ -113,6 +210,7 @@ end = struct
   let exp = ZP0.exp
   let log = ZP0.log
   let log10 = ZP0.log10
+  let pow y x = exp (y *. log x) % x^y == (x |> pow y)
 
   let pi = atan2 0.0 (neg 1.0)
 end
