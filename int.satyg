@@ -26,6 +26,12 @@ module Int : sig
   val sup : int list -> int
   val inf : int list -> int
 
+  val (<) : int -> int -> bool
+  val (>) : int -> int -> bool
+  val (>=) : int -> int -> bool
+  val (<=) : int -> int -> bool
+  val (==) : int -> int -> bool
+
   % bitwise operations
   val lsl : int -> int -> int
   val asr : int -> int -> int
@@ -71,6 +77,12 @@ end = struct
   let-rec inf
   | [] = max-value
   | (x :: xs) = min x (inf xs)
+
+  let (<) = (<)
+  let (<=) = (<=)
+  let (>) = (>)
+  let (>=) = (>=)
+  let (==) = (==)
 
   let lnot i = (-i) - 1
 
