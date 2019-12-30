@@ -208,8 +208,8 @@ end = struct
           else
             h
         else
-          if (h -. f ) > 0.5 then
-            h -. 0.5
+          if (h -. f) > 0.5 then
+            h -. 1.0
           else
             h
 
