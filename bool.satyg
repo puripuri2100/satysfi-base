@@ -1,0 +1,46 @@
+@import: base
+@import: eq
+@import: ord
+
+module Bool : sig
+  val ord : (bool Ord.t) implicit
+  val eq : (bool Eq.t) implicit
+
+  val equal : bool -> bool -> bool
+  val (==) : bool -> bool -> bool
+  val (<) : bool -> bool -> bool
+  val (>) : bool -> bool -> bool
+  val (>=) : bool -> bool -> bool
+  val (<=) : bool -> bool -> bool
+  val (<>) : bool -> bool -> bool
+
+  val min : bool -> bool -> bool
+  val max : bool -> bool -> bool
+  val min-value : bool
+  val max-value : bool
+
+  val neg : bool -> bool
+
+  val to-int : bool -> int
+end = struct
+  let ord = Ord.make (fun b1 b2 -> (
+      match (b1, b2) with
+      | (true, true) -> Eq
+      | (true, false) -> Gt
+      | (false, true) -> Lt
+      | (false, false) -> Eq))
+  let (==) = Ord.eq ord
+  let (<>) = Ord.neq ord
+  let (>=) = Ord.ge ord
+  let (>) = Ord.gt ord
+  let (<=) = Ord.le ord
+  let (<) = Ord.lt ord
+  let eq = Ord.derive-eq ord
+  let equal = Eq.equal eq
+  let min = ( && )
+  let max = ( || )
+  let min-value = false
+  let max-value = true
+  let neg b = not b
+  let to-int b = if b then 1 else 0
+end

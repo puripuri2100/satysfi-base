@@ -12,6 +12,7 @@ module Ord : sig
   val min : ('a t) implicit -> 'a -> 'a -> 'a
   val max : ('a t) implicit -> 'a -> 'a -> 'a
   val eq : ('a t) implicit -> 'a -> 'a -> bool
+  val neq : ('a t) implicit -> 'a -> 'a -> bool
   val lt : ('a t) implicit -> 'a -> 'a -> bool
   val le : ('a t) implicit -> 'a -> 'a -> bool
   val gt : ('a t) implicit -> 'a -> 'a -> bool
@@ -28,6 +29,10 @@ end = struct
     match compare ord a b with
     | Eq -> true
     | _ -> false
+  let neq ord a b =
+    match compare ord a b with
+    | Eq -> false
+    | _ -> true
   let lt ord a b =
     match compare ord a b with
     | Lt -> true
