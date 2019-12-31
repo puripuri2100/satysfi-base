@@ -206,6 +206,12 @@ exports[`Check compiler outputs 1`] = `
 [32m[debug.log] 1. == 1. = true[0m
 [32m[debug.log] inf[0m
 [32m[debug.log] -inf[0m
+[32m[debug.log] 9.88131291682e-324[0m
+[32m[debug.log] 4.94065645841e-324[0m
+[32m[debug.log] 0.[0m
+[32m[debug.log] 4.49423283716e+307[0m
+[32m[debug.log] 8.98846567431e+307[0m
+[32m[debug.log] inf[0m
 [32m[debug.log] 6.[0m
 [32m[debug.log] 6.[0m
 [32m[debug.log] 5.[0m

@@ -68,9 +68,11 @@ end = struct
 
   let to-length f = 1pt *' f % never introduces inexactness
 
-  let pow2i i =
-    if not (-1022 <= i && i <= 1023) then
-      panic `Float.pow2i: invalid argument`
+  let exp2i i =
+    if i < -1074 then
+      0.0
+    else if i > 1023 then
+      inf
     else
       % binary method
       let-rec aux i e acc =
@@ -78,9 +80,7 @@ end = struct
           acc
         else
           aux (i / 2) (e *. e) (if i mod 2 == 1 then acc *. e else acc) in
-      if i == 0 then
-        1.0
-      else if i > 0 then
+      if i >= 0 then
         aux i 2.0 1.0
       else
         aux (-i) 0.5 1.0
@@ -104,7 +104,7 @@ end = struct
   let (<=) f g = f < g || f == g
   let (>=) f g = g <= f
   let is-finite f = not (is-nan f || is-inf f)
-  let min-normal = pow2i(-1022)
+  let min-normal = exp2i(-1022)
   let is-subnormal f = is-finite f && not (is-zero f) && f < min-normal
   let is-normal f = is-finite f && not (is-zero f) && f >= min-normal
 
@@ -128,14 +128,14 @@ end = struct
       f
     else if exp >= 0 then
       if exp <= 1023 then
-        f *. pow2i exp
+        f *. exp2i exp
       else
-        (f *. pow2i 1023) *. pow2i (exp - 1023)
+        (f *. exp2i 1023) *. exp2i (exp - 1023)
     else
       if exp >= -1022 then
-        f *. pow2i exp
+        f *. exp2i exp
       else
-        (f *. pow2i (-1022)) *. pow2i (exp + 1022)
+        (f *. exp2i (-1022)) *. exp2i (exp + 1022)
 
   let signbit f =
     if is-nan f then
@@ -155,7 +155,7 @@ end = struct
         if Int.(k == 0) then
           acc
         else
-          if f >= pow2i ((2 |> Int.pow (k - 1)) - 1023) then
+          if f >= exp2i ((2 |> Int.pow (k - 1)) - 1023) then
             aux (f |> ldexp (- (2 |> Int.pow (k - 1)))) (k - 1) (acc * 2 + 1)
           else
             aux f (k - 1) (acc * 2)
