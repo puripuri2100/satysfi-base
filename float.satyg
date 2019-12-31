@@ -122,21 +122,6 @@ end = struct
   let of-int = float
   let to-int = round
 
-  let ldexp exp f =
-    open Int in
-    if is-nan f || is-inf f || is-zero f || exp == 0 then
-      f
-    else if exp >= 0 then
-      if exp <= 1023 then
-        f *. exp2i exp
-      else
-        (f *. exp2i 1023) *. exp2i (exp - 1023)
-    else
-      if exp >= -1022 then
-        f *. exp2i exp
-      else
-        (f *. exp2i (-1022)) *. exp2i (exp + 1022)
-
   let signbit f =
     if is-nan f then
       false
@@ -151,17 +136,19 @@ end = struct
     else if is-zero f || is-subnormal f then
       0
     else
-      let-rec aux f k acc =
+      let f = abs f in
+      let-rec aux k acc =
         if Int.(k == 0) then
-          acc
+          acc + 1023
         else
-          if f >= exp2i ((2 |> Int.pow (k - 1)) - 1023) then
-            aux (f |> ldexp (- (2 |> Int.pow (k - 1)))) (k - 1) (acc * 2 + 1)
+          let m = 2 |> Int.pow (k - 1) in
+          if f >= exp2i (acc + m) then
+            aux (k - 1) (acc + m)
           else
-            aux f (k - 1) (acc * 2)
-      in aux (abs f) 11 0
+            aux (k - 1) acc
+      in aux 11 (-1023)
 
-  let-rec frexp f =
+  let-rec frexp f = % never invokes rounding
     if is-nan f || is-inf f then
       (f, 1023)
     else if is-zero f then
@@ -169,15 +156,33 @@ end = struct
     else if f < 0.0 then
       let (f, exp) = frexp (neg f) in
       (neg f, exp)
-    else
+    else if is-subnormal f then
       let-rec aux f e = % adjust subnormal numbers
         if f >= 0.5 then
           (f, e)
         else
-          aux (f |> ldexp 1) (e - 1)
+          aux (f *. 2.0) (e - 1)
       in
-      let exp = get-exp f in
-      aux (f |> ldexp (1023 - exp - 1)) (exp - 1023 + 1)
+      aux f 0
+    else
+      let exp = get-exp f - 1023 in
+      (f *. exp2i (- exp), exp)
+
+  let-rec ldexp exp f =
+    open Int in
+    if is-nan f || is-inf f || is-zero f || exp == 0 then
+      f
+    else if exp >= 0 then
+      if exp <= 1023 then
+        f *. exp2i exp
+      else
+        ldexp (exp - 1023) (f *. exp2i 1023)
+    else
+      if exp >= -1074 then
+        f *. exp2i exp
+      else
+        let (f, e) = frexp f in
+        f *. exp2i (e + exp)
 
   let-rec truncate f =
     if not (is-finite f) then
