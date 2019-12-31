@@ -29,6 +29,7 @@
 @import: ../../stream
 @import: ../../pager
 @import: ../../cross-ref
+@import: ../../format
 
 open Fn in
 open RegExp in
@@ -216,16 +217,18 @@ let _ = Promise.force p in
 let () = Debug.log `==== Float ====` in
 let () =
   open Float in
-  let _ = pi |> String.of-float |> Debug.log in
+  let p f = f |> String.of-float |> Debug.log in
+  let _ = p pi in
   let l = [inf; ninf; nan; 0.0; neg 0.0; 1.0] in
   let () = l |> List.iter (fun a ->
     l |> List.iter (fun b ->
-      Debug.log (String.of-float a ^ #` == `# ^ String.of-float b ^ #` = `# ^ String.of-bool Float.(a == b))
+      Format.format `{} == {} = {}` [String.of-float a; String.of-float b; String.of-bool (a == b)]
+        |> Debug.log
     )
   ) in
-  let () = Debug.log (String.of-float (1.0 /. 0.0)) in
-  let () = Debug.log (String.of-float (1.0 /. neg 0.0)) in
-  let p f = f |> String.of-float |> Debug.log in
+  let () = p (1.0 /. 0.0) in
+  let () = p (1.0 /. neg 0.0) in
+  let () = p (0.0 /. 0.0) in
   % virtually testing exp2i
   let () = [-1073; -1074; -1075; 1022; 1023; 1024] |> List.iter (fun a -> (p (1.0 |> ldexp a))) in
   let l = [5.95; 5.5; 5.05; 5.0; neg 5.95; neg 5.5; neg 5.05; neg 5.0] in
