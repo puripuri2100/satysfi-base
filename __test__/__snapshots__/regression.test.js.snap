@@ -170,43 +170,43 @@ exports[`Check compiler outputs 1`] = `
 [32m[debug.log] 3.14159265359[0m
 [32m[debug.log] inf == inf = true[0m
 [32m[debug.log] inf == -inf = false[0m
-[32m[debug.log] inf == nan = false[0m
+[32m[debug.log] inf == -nan = false[0m
 [32m[debug.log] inf == 0. = false[0m
 [32m[debug.log] inf == -0. = false[0m
 [32m[debug.log] inf == 1. = false[0m
 [32m[debug.log] -inf == inf = false[0m
 [32m[debug.log] -inf == -inf = true[0m
-[32m[debug.log] -inf == nan = false[0m
+[32m[debug.log] -inf == -nan = false[0m
 [32m[debug.log] -inf == 0. = false[0m
 [32m[debug.log] -inf == -0. = false[0m
 [32m[debug.log] -inf == 1. = false[0m
-[32m[debug.log] nan == inf = false[0m
-[32m[debug.log] nan == -inf = false[0m
-[32m[debug.log] nan == nan = false[0m
-[32m[debug.log] nan == 0. = false[0m
-[32m[debug.log] nan == -0. = false[0m
-[32m[debug.log] nan == 1. = false[0m
+[32m[debug.log] -nan == inf = false[0m
+[32m[debug.log] -nan == -inf = false[0m
+[32m[debug.log] -nan == -nan = false[0m
+[32m[debug.log] -nan == 0. = false[0m
+[32m[debug.log] -nan == -0. = false[0m
+[32m[debug.log] -nan == 1. = false[0m
 [32m[debug.log] 0. == inf = false[0m
 [32m[debug.log] 0. == -inf = false[0m
-[32m[debug.log] 0. == nan = false[0m
+[32m[debug.log] 0. == -nan = false[0m
 [32m[debug.log] 0. == 0. = true[0m
 [32m[debug.log] 0. == -0. = true[0m
 [32m[debug.log] 0. == 1. = false[0m
 [32m[debug.log] -0. == inf = false[0m
 [32m[debug.log] -0. == -inf = false[0m
-[32m[debug.log] -0. == nan = false[0m
+[32m[debug.log] -0. == -nan = false[0m
 [32m[debug.log] -0. == 0. = true[0m
 [32m[debug.log] -0. == -0. = true[0m
 [32m[debug.log] -0. == 1. = false[0m
 [32m[debug.log] 1. == inf = false[0m
 [32m[debug.log] 1. == -inf = false[0m
-[32m[debug.log] 1. == nan = false[0m
+[32m[debug.log] 1. == -nan = false[0m
 [32m[debug.log] 1. == 0. = false[0m
 [32m[debug.log] 1. == -0. = false[0m
 [32m[debug.log] 1. == 1. = true[0m
 [32m[debug.log] inf[0m
 [32m[debug.log] -inf[0m
-[32m[debug.log] nan[0m
+[32m[debug.log] -nan[0m
 [32m[debug.log] 9.88131291682e-324[0m
 [32m[debug.log] 4.94065645841e-324[0m
 [32m[debug.log] 0.[0m
