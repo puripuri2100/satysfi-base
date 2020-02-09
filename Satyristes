@@ -7,6 +7,7 @@
      (package "base.satyg" "base.satyg")
      (package "base0.satyg" "base0.satyg")
      (package "block.satyh" "block.satyh")
+     (package "bool.satyg" "bool.satyg")
      (package "char.satyg" "char.satyg")
      (package "color-ext.satyg" "color-ext.satyg")
      (package "context.satyh" "context.satyh")
